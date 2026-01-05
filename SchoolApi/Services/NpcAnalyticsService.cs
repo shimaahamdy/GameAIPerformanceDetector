@@ -54,6 +54,43 @@ namespace GameAi.Api.Services
             };
         }
 
+        public async Task<List<NpcOverviewDto>> GetAllNpcSummariesAsync()
+        {
+            // Group judge results by NPC
+            var grouped = await _db.JudgeResults
+                .AsNoTracking()
+                .GroupBy(j => j.NpcId)
+                .ToListAsync();
+
+            var result = new List<NpcOverviewDto>();
+
+            foreach (var group in grouped)
+            {
+                var judges = group.ToList();
+                var total = judges.Count;
+
+                var overview = new NpcOverviewDto
+                {
+                    NpcId = group.Key,
+                    TotalSessions = total,
+                    AverageFairness = Math.Round(judges.Average(j => j.FairnessScore), 2),
+                    ToneDistribution = new ToneDistributionDto
+                    {
+                        Friendly = judges.Count(j => j.OverallTone?.ToLower() == "friendly"),
+                        Neutral = judges.Count(j => j.OverallTone?.ToLower() == "neutral"),
+                        Hostile = judges.Count(j => j.OverallTone?.ToLower() == "hostile")
+                    },
+                    InCharacterRate = Math.Round(judges.Count(j => j.InCharacter) / (double)total, 2),
+                    EscalationRate = Math.Round(judges.Count(j => j.EscalationTooFast) / (double)total, 2)
+                };
+
+                result.Add(overview);
+            }
+
+            return result;
+        }
+
+     
     }
 
 }

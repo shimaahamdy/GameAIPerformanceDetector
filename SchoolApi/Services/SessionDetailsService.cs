@@ -1,6 +1,7 @@
 ﻿using GameAi.Api.DTOs;
 using GameAi.Api.Services.Contracts;
 using GameAI.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameAi.Api.Services
 {

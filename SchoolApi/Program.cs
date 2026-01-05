@@ -3,6 +3,8 @@ using GameAi.Api.RAG.Services;
 using GameAi.Api.RAG.Services.Contracts;
 using GameAi.Api.Services;
 using GameAi.Api.Services.Contracts;
+using GameAi.Api.ReportingAgent.Services;
+using GameAi.Api.ReportingAgent.Services.Contracts;
 using GameAI.Context;
 using GameAI.Controllers;
 using GameAI.MiddleWares;
@@ -44,7 +46,8 @@ namespace GameAI
                 }).AddEntityFrameworkStores<GameAIContext>();
 
             builder.Services.AddScoped<IJudgeService, JudgeService>();
-            builder.Services.AddScoped<IDashboardService, DashboardService>();
+            builder.Services.AddScoped<INpcAnalyticsService, NpcAnalyticsService>();
+            builder.Services.AddScoped<INpcSessionService, NpcSessionService>();
             builder.Services.AddScoped<IRagService, RagService>();
 
             builder.Services.AddSingleton<VectorStore>();
@@ -52,10 +55,33 @@ namespace GameAI
             builder.Services.AddScoped<IRagQueryService, RagQueryService>();
             builder.Services.AddScoped<IRagSeeder, RagSeeder>();
 
+            // ReportingAgent Services
+            builder.Services.AddScoped<IGameSessionService, GameSessionService>();
+            builder.Services.AddScoped<IAgentPlanner, AgentPlanner>();
+            builder.Services.AddScoped<IAgentDataService, AgentDataService>();
+            builder.Services.AddScoped<IAgentAiService, AgentAiService>();
+            builder.Services.AddScoped<IPdfGenerator, QuestPdfGenerator>();
+
+            // ReAct Agent Tools
+            builder.Services.AddScoped<GameAi.Api.ReportingAgent.Services.Contracts.IReActTool, GameAi.Api.ReportingAgent.Services.Tools.GetSessionDataTool>();
+            builder.Services.AddScoped<GameAi.Api.ReportingAgent.Services.Contracts.IReActTool, GameAi.Api.ReportingAgent.Services.Tools.GenerateChartsTool>();
+
+            // Choose agent implementation:
+            // Option 1: Original linear agent (Plan → Execute → Generate)
+            // builder.Services.AddScoped<IChartsAgentService, ChartsAgentService>();
+            
+            // Option 2: ReAct agent (Reason → Act → Observe → Repeat)
+            builder.Services.AddScoped<IChartsAgentService, ReActAgentService>();
+
+            // Configure OpenAI HttpClient with API key from configuration
+            var openAiApiKey = builder.Configuration["OpenAI:ApiKey"] 
+                ?? throw new InvalidOperationException("OpenAI:ApiKey is not configured in appsettings.json");
+            var openAiBaseUrl = builder.Configuration["OpenAI:BaseUrl"] ?? "https://api.openai.com";
 
             builder.Services.AddHttpClient("OpenAI", client =>
             {
-                client.BaseAddress = new Uri("https://api.openai.com"); // or your AI endpoint
+                client.BaseAddress = new Uri(openAiBaseUrl);
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {openAiApiKey}");
             });
 
 

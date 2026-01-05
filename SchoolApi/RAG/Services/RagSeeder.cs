@@ -1,16 +1,17 @@
 ﻿using GameAi.Api.RAG.Services.Contracts;
 using GameAI.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace GameAi.Api.RAG.Services
 {
     public class RagSeeder : IRagSeeder
     {
-        private readonly GameAiDbContext _db;
+        private readonly GameAIContext _db;
         private readonly IEmbeddingService _embeddingService;
         private readonly VectorStore _vectorStore;
 
         public RagSeeder(
-            GameAiDbContext db,
+            GameAIContext db,
             IEmbeddingService embeddingService,
             VectorStore vectorStore)
         {

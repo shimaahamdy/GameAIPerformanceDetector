@@ -8,6 +8,8 @@
         public ToneDistributionDto ToneDistribution { get; set; } = new();
         public double InCharacterRate { get; set; }
         public double EscalationRate { get; set; }
+
+
     }
 
 }

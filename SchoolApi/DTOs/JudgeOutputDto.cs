@@ -1,11 +1,23 @@
-﻿namespace GameAi.Api.DTOs
+﻿using System.Text.Json.Serialization;
+
+namespace GameAi.Api.DTOs
 {
     public class JudgeOutputDto
     {
+        [JsonPropertyName("overallTone")]
         public string OverallTone { get; set; } = null!;
+
+        [JsonPropertyName("inCharacter")]
         public bool InCharacter { get; set; }
-        public int? FairnessScore { get; set; } // optional
-        public bool? EscalationTooFast { get; set; } // optional
-        public string? Summary { get; set; } // optional
+
+        [JsonPropertyName("fairnessScore")]
+        public int? FairnessScore { get; set; }
+
+        [JsonPropertyName("escalationTooFast")]
+        public bool? EscalationTooFast { get; set; }
+
+        [JsonPropertyName("summary")]
+        public string? Summary { get; set; }
+
     }
 }

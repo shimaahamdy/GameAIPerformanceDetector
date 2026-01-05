@@ -37,7 +37,7 @@ namespace GameAi.Api.Controllers
         [HttpGet("sessions/summary/{sessionId}")]
         public async Task<List<SessionNpcSummaryDto>> GetSessionNpcSummariesAsync(string sessionId)
         {
-            return await _db.JudgeResults
+            var result = await _db.JudgeResults
                 .Where(j => j.SessionId == sessionId)
                 .Select(j => new SessionNpcSummaryDto
                 {
@@ -49,41 +49,21 @@ namespace GameAi.Api.Controllers
                     Summary = j.Summary
                 })
                 .ToListAsync();
+
+            return result;
         }
 
 
-        [HttpGet("sessions/{sessionId}/{npcId}")]
-        public async Task<List<ConversationTurnDto>> GetConversationAsync(
-    string sessionId,
-    string npcId)
-        {
-            return await _db.AiConversations
-                .Where(c =>
-                    c.SessionId == sessionId &&
-                    c.NpcId == npcId)
-                .OrderBy(c => c.Timestamp)
-                .SelectMany(c => new[]
-                {
-            c.PlayerMessage != null
-                ? new ConversationTurnDto
-                {
-                    Timestamp = c.Timestamp,
-                    Speaker = "player",
-                    Message = c.PlayerMessage
-                }
-                : null,
 
-            c.AiResponse != null
-                ? new ConversationTurnDto
-                {
-                    Timestamp = c.Timestamp,
-                    Speaker = "npc",
-                    Message = c.AiResponse
-                }
-                : null
-                })
-                .Where(x => x != null)
-                .ToListAsync();
+
+        /// <summary>
+        /// Get overview summaries for all NPCs based on judge results
+        /// </summary>
+        [HttpGet("overview/all")]
+        public async Task<ActionResult<List<NpcOverviewDto>>> GetAllNpcSummaries()
+        {
+            var summaries = await _analytics.GetAllNpcSummariesAsync();
+            return Ok(summaries);
         }
 
 
