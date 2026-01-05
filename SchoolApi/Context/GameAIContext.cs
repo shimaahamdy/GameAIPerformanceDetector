@@ -19,6 +19,7 @@ namespace GameAI.Context
 
         public DbSet<AiConversation> AiConversations { get; set; }
         public DbSet<JudgeResult> JudgeResults { get; set; }
+        public DbSet<NpcRule> NpcRules { get; set; }
 
 
     }

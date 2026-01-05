@@ -13,7 +13,7 @@ public class DashboardService : IDashboardService
     }
 
     // 1️⃣ Get all sessions (summary only)
-    public async Task<List<DashboardConversationDto>> GetSessionsAsync()
+    public async Task<List<DashboardConversationDto>> GetSessionssumarryAsync()
     {
         var conversations = await _dbContext.AiConversations
             .AsNoTracking()
@@ -84,4 +84,19 @@ public class DashboardService : IDashboardService
             Summary = judge?.Summary ?? "No AI evaluation available."
         };
     }
+
+
+    public async Task<List<SessionListDto>> GetSessionsAsync()
+    {
+        return await _dbContext.AiConversations
+            .GroupBy(c => c.SessionId)
+            .Select(g => new SessionListDto
+            {
+                SessionId = g.Key,
+                CreatedAt = g.Min(x => x.CreatedAt)
+            })
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync();
+    }
+
 }
