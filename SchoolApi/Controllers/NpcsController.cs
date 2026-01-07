@@ -2,6 +2,7 @@
 using GameAi.Api.Services;
 using GameAi.Api.Services.Contracts;
 using GameAI.Context;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,7 @@ namespace GameAi.Api.Controllers
 {
     [ApiController]
     [Route("api/npcs")]
+    [Authorize]
     public class NpcsController : ControllerBase
     {
         private readonly INpcAnalyticsService _analytics;

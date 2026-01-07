@@ -1,5 +1,6 @@
 ﻿using GameAi.Api.DTOs;
 using GameAI.Context;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -8,6 +9,7 @@ namespace GameAi.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SessionController : ControllerBase
     {
         private readonly GameAIContext _db;

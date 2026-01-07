@@ -57,6 +57,7 @@ namespace GameAI
 
             builder.Services.AddScoped<IEmbeddingService, OpenAiEmbeddingService>();
             builder.Services.AddScoped<IRagQueryService, RagQueryService>();
+            builder.Services.AddScoped<IDeveloperMessageService, DeveloperMessageService>();
             builder.Services.AddScoped<IRagSeeder, RagSeeder>();
 
             // ReportingAgent Services

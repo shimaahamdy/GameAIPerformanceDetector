@@ -1,5 +1,6 @@
 ﻿using GameAi.Api.ReportingAgent.ChatRag;
 using GameAI.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -54,7 +55,7 @@ namespace GameAI.Controllers
 
                 else
                 {
-                    var developerId = user.Id;
+                    var developerId = user.UserName;
 
                     await _agent.InitializeDeveloperMemoryAsync(developerId);
                     // generate token
