@@ -91,6 +91,25 @@ namespace GameAi.Api.ReportingAgent.Services
                 content = $"""
                 You are a ReAct-style AI agent that reasons about user queries and takes actions.
                 
+                DATA MODEL KNOWLEDGE
+
+                • A Session is identified by a SessionId and contains interactions
+                  between the player and multiple NPCs.
+
+                • NPC interactions are stored as conversations and can be counted
+                  and summarized.
+
+                • JudgeResults contain AI-evaluated metrics per NPC per session.
+
+                  JudgeResults provide NUMERIC data such as:
+                  - FairnessScore (0–100)
+                  - EscalationSpeed
+                  - AggressionLevel
+                  - SatisfactionScore
+
+                • Charts REQUIRE numeric metrics.
+                • Reports MAY include text summaries and charts.
+
                 Available tools:
                 {toolsDescription}
                 
@@ -105,6 +124,17 @@ namespace GameAi.Api.ReportingAgent.Services
                 - nextAction: Tool name to call (or null if complete)
                 - actionParameters: Dictionary of parameters for the tool (or null)
                 - isComplete: true if ready to generate final response
+
+
+                STRICT RULES (IMPORTANT):
+
+                1. If required data is missing:
+                   → Call the appropriate tool.
+                   → Do NOT say “not enough data” without trying tools first.
+
+                2. Only set `isComplete = true` when:
+                   - All required data is collected
+                   - The final response can be generated
                 """
             };
 

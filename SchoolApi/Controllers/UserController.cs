@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using GameAi.Api.ReportingAgent.ChatRag;
+using GameAI.DTOs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.IdentityModel.Tokens;
-using GameAI.DTOs;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -15,10 +16,13 @@ namespace GameAI.Controllers
     public class UserController : ControllerBase
     {
         private UserManager<IdentityUser> userManager;
+        private readonly DeveloperAgentService _agent;
 
-        public UserController(UserManager<IdentityUser> _userManager)
+
+        public UserController(UserManager<IdentityUser> _userManager, DeveloperAgentService agent)
         {
             userManager = _userManager;
+            _agent = agent;
         }
 
         //Register
@@ -50,7 +54,11 @@ namespace GameAI.Controllers
 
                 else
                 {
+                    var developerId = user.Id;
+
+                    await _agent.InitializeDeveloperMemoryAsync(developerId);
                     // generate token
+
                     return Ok($"token: {GenerateToken(user)}");
 
                 }

@@ -24,6 +24,8 @@ namespace GameAi.Api.RAG.Services
         {
             await SeedNpcRules();
             await SeedPastConversations();
+
+
         }
 
         private async Task SeedNpcRules()
@@ -44,6 +46,7 @@ namespace GameAi.Api.RAG.Services
                 });
             }
         }
+
 
         private async Task SeedPastConversations()
         {

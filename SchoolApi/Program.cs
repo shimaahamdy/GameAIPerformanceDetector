@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
+using GameAi.Api.ReportingAgent.ChatRag;
 namespace GameAI
 {
     public class Program
@@ -51,6 +52,9 @@ namespace GameAI
             builder.Services.AddScoped<IRagService, RagService>();
 
             builder.Services.AddSingleton<VectorStore>();
+            builder.Services.AddScoped<DevInMemoryVectorStore>();
+            builder.Services.AddScoped<DeveloperAgentService>();
+
             builder.Services.AddScoped<IEmbeddingService, OpenAiEmbeddingService>();
             builder.Services.AddScoped<IRagQueryService, RagQueryService>();
             builder.Services.AddScoped<IRagSeeder, RagSeeder>();
