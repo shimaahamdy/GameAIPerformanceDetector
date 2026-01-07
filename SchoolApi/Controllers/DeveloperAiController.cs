@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace GameAi.Api.Controllers
@@ -24,23 +25,12 @@ namespace GameAi.Api.Controllers
             _service = service;
         }
 
-        [HttpPost("request")]
-        public async Task<IActionResult> PostRequest([FromBody] string userMessage)
-        {
-            // Get developer ID from identity
-            var developerId = User.FindFirst("sub")?.Value
-                              ?? User.FindFirst("id")?.Value
-                              ?? throw new Exception("User not authenticated");
-
-            var response = await _agent.HandleDeveloperRequestAsync(developerId, userMessage);
-            return Ok(response);
-        }
 
         [HttpGet]
         public async Task<IActionResult> GetMessages(int page = 1, int pageSize = 20)
         {
             // Extract developer ID from JWT
-            var developerId = User.Identity.Name;
+            var developerId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
             var messages = await _service.GetMessagesAsync(developerId, page, pageSize);
             JsonSerializerOptions _jsonOptions =

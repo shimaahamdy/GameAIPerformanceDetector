@@ -82,7 +82,7 @@ namespace GameAi.Api.ReportingAgent.Services
             var context = BuildReasoningContext(state);
 
             // Build tool descriptions for AI to choose from
-            var toolsDescription = string.Join("\n", _tools.Select(t => 
+            var toolsDescription = string.Join("\n", _tools.Select(t =>
                 $"- {t.Name}: {t.Description}"));
 
             var systemMessage = new
@@ -117,6 +117,7 @@ namespace GameAi.Api.ReportingAgent.Services
                 1. Analyze the user query and current state
                 2. Decide if you need more information (call a tool) or if you have enough to answer
                 3. If you need more info, specify which tool to call and its parameters
+                4. if you got nothing after tool executeioion try to change paramters structure
                 4. If you have enough info, set isComplete=true
                 
                 Output JSON with:
@@ -296,6 +297,8 @@ namespace GameAi.Api.ReportingAgent.Services
                 throw new HttpRequestException($"Response generation failed: {raw}");
 
             var aiText = ExtractTextContent(raw);
+            var summary =  await GenerateSummaryAsync(userQuery: state.UserQuery, data: state.CollectedData);
+
 
             // Determine if PDF is needed
             var needsPdf = state.UserQuery.Contains("pdf", StringComparison.OrdinalIgnoreCase)
@@ -305,7 +308,7 @@ namespace GameAi.Api.ReportingAgent.Services
             ReportDto? pdfReport = null;
             if (needsPdf)
             {
-                var pdfBytes = await _pdfGenerator.GeneratePdfAsync(aiText, state.CollectedData.Charts);
+                var pdfBytes = await _pdfGenerator.GeneratePdfAsync(summary, state.CollectedData.Charts);
                 pdfReport = new ReportDto
                 {
                     FileName = $"GameReport_{DateTime.UtcNow:yyyyMMdd_HHmmss}.pdf",
@@ -317,7 +320,9 @@ namespace GameAi.Api.ReportingAgent.Services
             {
                 Text = aiText,
                 Charts = state.CollectedData.Charts,
-                Report = pdfReport
+                Report = pdfReport,
+                Summary = summary
+                
             };
         }
 
@@ -368,7 +373,7 @@ namespace GameAi.Api.ReportingAgent.Services
         {
             var summary = new StringBuilder();
             summary.AppendLine($"Agent executed {state.IterationCount} reasoning cycles.");
-            
+
             if (state.Actions.Any())
             {
                 summary.AppendLine($"Actions taken: {string.Join(", ", state.Actions.Select(a => a.ToolName))}");
@@ -427,6 +432,69 @@ namespace GameAi.Api.ReportingAgent.Services
                 return "AI output could not be parsed.";
             }
         }
+
+        private async Task<string> GenerateSummaryAsync(string userQuery,AgentDataResult data)
+        {
+            var client = _httpClientFactory.CreateClient("OpenAI");
+
+            var metricsText = data.Metrics.Any()
+                ? string.Join("\n", data.Metrics.Select(kv => $"{kv.Key}: {kv.Value}"))
+                : "No metrics available.";
+
+            var chartsText = data.Charts.Any()
+                ? string.Join("\n", data.Charts.Select(c =>
+                    $"{c.Title}: {string.Join(", ", c.Values)}"))
+                : "No charts available.";
+
+            var systemMessage = new
+            {
+                role = "system",
+                content = """
+        You are a game analytics summarization engine.
+
+        Rules:
+        - Produce a SHORT executive summary
+        - Use ONLY provided data
+        - No explanations, no fluff
+        - No agent process
+        """
+            };
+
+            var userMessage = new
+            {
+                role = "user",
+                content = $"""
+        User Query:
+        {userQuery}
+
+        Metrics:
+        {metricsText}
+
+        Charts:
+        {chartsText}
+
+        Generate summary.
+        """
+            };
+
+            var payload = new
+            {
+                model = "gpt-3.5-turbo-0125",
+                messages = new[] { systemMessage, userMessage },
+                temperature = 0.2
+            };
+
+            var response = await client.PostAsync(
+                "v1/chat/completions",
+                new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
+            );
+
+            var raw = await response.Content.ReadAsStringAsync();
+            return ExtractTextContent(raw);
+        }
+
+
+
     }
 }
 

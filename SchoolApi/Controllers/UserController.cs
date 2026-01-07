@@ -1,10 +1,7 @@
 ﻿using GameAi.Api.ReportingAgent.ChatRag;
 using GameAI.DTOs;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -55,7 +52,7 @@ namespace GameAI.Controllers
 
                 else
                 {
-                    var developerId = user.UserName;
+                    var developerId = user.Id;
 
                     await _agent.InitializeDeveloperMemoryAsync(developerId);
                     // generate token
@@ -73,7 +70,6 @@ namespace GameAI.Controllers
             var claims = new List<Claim>();
             claims.Add(new Claim(ClaimTypes.Name, user.UserName));
             claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Id));
-            claims.Add(new Claim("Address", "Cairo"));
             claims.Add(new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()));
 
             var token = new JwtSecurityToken(
